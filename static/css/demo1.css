@@ -25,7 +25,7 @@ main {
 	width: 100%;
 	height: 100%;
 	position: absolute;
-	top: -50px;
+	top: -40px;
 	left: 0;
 }
 
@@ -110,7 +110,7 @@ main {
 /* Mobile first - default styles for mobile */
 @media screen and (max-width: 768px) {
 	.container {
-		top: -80px;
+		top: -64px;
 	}
 	
 	.brain-text {
@@ -131,7 +131,7 @@ main {
 /* Very small mobile screens */
 @media screen and (max-width: 480px) {
 	.container {
-		top: -100px;
+		top: -80px;
 	}
 	
 	.brain-text {
