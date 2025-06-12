@@ -30,7 +30,7 @@ main {
 }
 
 .brain-text {
-	position: absolute;
+	position: fixed;
 	bottom: 80px;
 	left: 50%;
 	transform: translateX(-50%);
@@ -47,35 +47,29 @@ main {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+	width: 90%;
+	max-width: 400px;
 }
 
 /* Mobile first - default styles for mobile */
 @media screen and (max-width: 768px) {
-	.container {
-		transform: scale(0.7);
-		transform-origin: center;
-	}
-	
 	.brain-text {
 		font-size: 14px;
 		bottom: 80px;
-		padding: 0 20px;
 		white-space: normal;
-		max-width: 90%;
 		line-height: 1.4;
+		padding: 0 20px;
+		width: calc(100% - 40px);
 	}
 }
 
 /* Very small mobile screens */
 @media screen and (max-width: 480px) {
-	.container {
-		transform: scale(0.6);
-		transform-origin: center;
-	}
-	
 	.brain-text {
 		font-size: 13px;
-		bottom: 80px;
+		bottom: 60px;
+		padding: 0 15px;
+		width: calc(100% - 30px);
 	}
 }
 
@@ -107,6 +101,19 @@ main {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+}
+
+@media screen and (max-width: 480px) {
+	.gui-arrow-toggle {
+		top: 15px;
+		right: 15px;
+		width: 25px;
+		height: 25px;
+	}
+	
+	.gui-arrow-toggle .arrow {
+		font-size: 10px;
+	}
 }
 
 .gui-arrow-toggle:hover {

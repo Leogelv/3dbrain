@@ -78,6 +78,19 @@ export default class WebGLView {
 	resize() {
 		if (!this.renderer) return;
 		this.camera.aspect = window.innerWidth / window.innerHeight;
+		
+		// Adjust camera position based on screen size for mobile
+		const isMobile = window.innerWidth <= 768;
+		const isSmallMobile = window.innerWidth <= 480;
+		
+		if (isSmallMobile) {
+			this.camera.position.z = 500; // Further away = smaller brain
+		} else if (isMobile) {
+			this.camera.position.z = 420; // Medium distance
+		} else {
+			this.camera.position.z = 300; // Default desktop
+		}
+		
 		this.camera.updateProjectionMatrix();
 
 		this.fovHeight = 2 * Math.tan((this.camera.fov * Math.PI) / 180 / 2) * this.camera.position.z;
