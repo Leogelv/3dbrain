@@ -25,7 +25,7 @@ main {
 	width: 100%;
 	height: 100%;
 	position: absolute;
-	top: 0;
+	top: -50px;
 	left: 0;
 }
 
@@ -51,25 +51,68 @@ main {
 	max-width: 400px;
 }
 
-.swipe-hint {
+.activated-animation {
 	position: fixed;
-	bottom: 40px;
+	top: 50%;
 	left: 50%;
-	transform: translateX(-50%);
-	color: #7a6bb0;
-	font-size: 12px;
-	font-weight: 300;
+	transform: translate(-50%, -50%);
+	color: #4a90e2;
+	font-size: 72px;
+	font-weight: 700;
 	text-align: center;
-	z-index: 99;
-	opacity: 0.7;
+	z-index: 1000;
+	opacity: 0;
+	text-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+	display: none;
+	animation: activatedShow 3s ease-in-out forwards;
+}
+
+@keyframes activatedShow {
+	0% {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.5);
+	}
+	10% {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1.2);
+	}
+	90% {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
+	}
+	100% {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(0.8);
+	}
+}
+
+.typing-effect {
+	overflow: hidden;
+	border-right: 3px solid #4a90e2;
+	white-space: nowrap;
+	animation: typing 2.5s steps(9, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+	from { width: 0 }
+	to { width: 100% }
+}
+
+@keyframes blink-caret {
+	from, to { border-color: transparent }
+	50% { border-color: #4a90e2 }
 }
 
 /* Mobile first - default styles for mobile */
 @media screen and (max-width: 768px) {
+	.container {
+		top: -80px;
+	}
+	
 	.brain-text {
 		font-size: 28px;
 		bottom: 100px;
@@ -80,14 +123,17 @@ main {
 		font-weight: 500;
 	}
 	
-	.swipe-hint {
-		bottom: 60px;
-		font-size: 14px;
+	.activated-animation {
+		font-size: 48px;
 	}
 }
 
 /* Very small mobile screens */
 @media screen and (max-width: 480px) {
+	.container {
+		top: -100px;
+	}
+	
 	.brain-text {
 		font-size: 24px;
 		bottom: 90px;
@@ -96,9 +142,8 @@ main {
 		line-height: 1.2;
 	}
 	
-	.swipe-hint {
-		bottom: 50px;
-		font-size: 13px;
+	.activated-animation {
+		font-size: 36px;
 	}
 }
 
@@ -107,10 +152,6 @@ main {
 	.brain-text {
 		font-size: 18px;
 		bottom: 80px;
-	}
-	
-	.swipe-hint {
-		display: none;
 	}
 }
 
