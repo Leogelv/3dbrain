@@ -55,7 +55,7 @@ export default class GUIView {
 		// Create arrow toggle
 		const toggle = document.createElement('div');
 		toggle.className = 'gui-arrow-toggle';
-		toggle.innerHTML = '<div class="arrow">▶</div>';
+		toggle.innerHTML = '<div class="arrow">↓</div>';
 		document.body.appendChild(toggle);
 
 		toggle.addEventListener('click', () => {

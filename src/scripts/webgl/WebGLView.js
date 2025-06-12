@@ -84,9 +84,9 @@ export default class WebGLView {
 		const isSmallMobile = window.innerWidth <= 480;
 		
 		if (isSmallMobile) {
-			this.camera.position.z = 500; // Further away = smaller brain
+			this.camera.position.z = 200; // Closer = bigger brain
 		} else if (isMobile) {
-			this.camera.position.z = 420; // Medium distance
+			this.camera.position.z = 220; // Closer for tablet
 		} else {
 			this.camera.position.z = 300; // Default desktop
 		}
