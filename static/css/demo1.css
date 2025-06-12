@@ -51,61 +51,7 @@ main {
 	max-width: 400px;
 }
 
-.activated-animation {
-	position: fixed;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	color: #4a90e2;
-	font-size: 72px;
-	font-weight: 700;
-	text-align: center;
-	z-index: 1000;
-	opacity: 0;
-	text-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-	display: none;
-	animation: activatedShow 3s ease-in-out forwards;
-}
 
-@keyframes activatedShow {
-	0% {
-		opacity: 0;
-		transform: translate(-50%, -50%) scale(0.5);
-	}
-	10% {
-		opacity: 1;
-		transform: translate(-50%, -50%) scale(1.2);
-	}
-	90% {
-		opacity: 1;
-		transform: translate(-50%, -50%) scale(1);
-	}
-	100% {
-		opacity: 0;
-		transform: translate(-50%, -50%) scale(0.8);
-	}
-}
-
-.typing-effect {
-	overflow: hidden;
-	border-right: 3px solid #4a90e2;
-	white-space: nowrap;
-	animation: typing 2.5s steps(9, end), blink-caret 0.75s step-end infinite;
-}
-
-@keyframes typing {
-	from { width: 0 }
-	to { width: 100% }
-}
-
-@keyframes blink-caret {
-	from, to { border-color: transparent }
-	50% { border-color: #4a90e2 }
-}
 
 /* Mobile first - default styles for mobile */
 @media screen and (max-width: 768px) {
@@ -122,10 +68,6 @@ main {
 		width: calc(100% - 40px);
 		font-weight: 500;
 	}
-	
-	.activated-animation {
-		font-size: 48px;
-	}
 }
 
 /* Very small mobile screens */
@@ -140,10 +82,6 @@ main {
 		padding: 0 15px;
 		width: calc(100% - 30px);
 		line-height: 1.2;
-	}
-	
-	.activated-animation {
-		font-size: 36px;
 	}
 }
 

@@ -6,11 +6,31 @@ ready(() => {
 	window.app = new App();
 	window.app.init();
 	
-	// Start "ACTIVATED" animation after a short delay
+	// Typewriter effect for brain text
 	setTimeout(() => {
-		const activatedElement = document.querySelector('.activated-animation');
-		if (activatedElement) {
-			activatedElement.style.display = 'block';
+		const typewriterElement = document.getElementById('typewriter');
+		if (typewriterElement && window.Typewriter) {
+			// Clear the initial text
+			typewriterElement.innerHTML = '';
+			
+			const typewriter = new window.Typewriter(typewriterElement, {
+				loop: false,
+				delay: 75,
+				cursor: '|'
+			});
+			
+			typewriter
+				.typeString('Brain Programming')
+				.pauseFor(200)
+				.typeString('<br>')
+				.typeString('Activated')
+				.pauseFor(500)
+				.callFunction(() => {
+					// Remove cursor after animation
+					const cursor = typewriterElement.querySelector('.Typewriter__cursor');
+					if (cursor) cursor.style.display = 'none';
+				})
+				.start();
 		}
 	}, 1000);
 });
