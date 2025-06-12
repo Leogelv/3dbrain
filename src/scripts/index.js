@@ -10,7 +10,8 @@ ready(() => {
 	setTimeout(() => {
 		const typewriterElement = document.getElementById('typewriter');
 		if (typewriterElement && window.Typewriter) {
-			// Clear the initial text
+			// Show element and clear the initial text
+			typewriterElement.style.opacity = '0.9';
 			typewriterElement.innerHTML = '';
 			
 			const typewriter = new window.Typewriter(typewriterElement, {
