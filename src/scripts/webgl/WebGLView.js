@@ -13,6 +13,9 @@ export default class WebGLView {
 
 		// Only use the brain image
 		this.brainImage = 'images/sample-01.png';
+		
+		// Detect mobile device
+		this.isMobile = window.innerWidth <= 768;
 
 		this.initThree();
 		this.initParticles();
@@ -28,10 +31,14 @@ export default class WebGLView {
 
 		// camera
 		this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
-		this.camera.position.z = 300;
+		this.camera.position.z = this.isMobile ? 400 : 300;
 
 		// renderer
         this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.isMobile ? 1.5 : 2));
+
+		document.querySelector('.container').appendChild(this.renderer.domElement);
 
         // clock
 		this.clock = new THREE.Clock(true);
@@ -77,12 +84,17 @@ export default class WebGLView {
 
 	resize() {
 		if (!this.renderer) return;
+
 		this.camera.aspect = window.innerWidth / window.innerHeight;
 		this.camera.updateProjectionMatrix();
 
 		this.fovHeight = 2 * Math.tan((this.camera.fov * Math.PI) / 180 / 2) * this.camera.position.z;
 
 		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		
+		// Update mobile detection on resize
+		this.isMobile = window.innerWidth <= 768;
+		this.camera.position.z = this.isMobile ? 400 : 300;
 
 		if (this.interactive) this.interactive.resize();
 		if (this.particles) this.particles.resize();

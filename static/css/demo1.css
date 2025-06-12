@@ -3,6 +3,12 @@ body {
 	overflow: hidden;
 	background: #f0f0f8;
 	background: linear-gradient(135deg, #f5f3ff 0%, #e8e5ff 50%, #f0f5ff 100%);
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-tap-highlight-color: transparent;
 }
 
 main {
@@ -25,7 +31,7 @@ main {
 
 .brain-text {
 	position: absolute;
-	bottom: 20px;
+	bottom: 80px;
 	left: 50%;
 	transform: translateX(-50%);
 	color: #4a3a8a;
@@ -37,16 +43,55 @@ main {
 	opacity: 0.9;
 	letter-spacing: 0.5px;
 	text-shadow: 0 0 10px rgba(138, 43, 226, 0.2);
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 /* Mobile first - default styles for mobile */
 @media screen and (max-width: 768px) {
 	.brain-text {
 		font-size: 14px;
-		bottom: 15px;
+		bottom: 80px;
 		padding: 0 20px;
 		white-space: normal;
 		max-width: 90%;
+		line-height: 1.4;
+	}
+	
+	/* Scale down brain particles for mobile */
+	.container canvas {
+		transform: scale(0.7);
+		transform-origin: center center;
+	}
+	
+	/* Adjust GUI toggle for mobile */
+	.gui-arrow-toggle {
+		top: 15px;
+		right: 15px;
+		width: 25px;
+		height: 25px;
+	}
+	
+	.gui-arrow-toggle .arrow {
+		font-size: 10px;
+	}
+}
+
+/* Small mobile devices */
+@media screen and (max-width: 480px) {
+	.brain-text {
+		font-size: 12px;
+		bottom: 80px;
+		max-width: 85%;
+		line-height: 1.3;
+	}
+	
+	/* Scale down even more for small screens */
+	.container canvas {
+		transform: scale(0.6);
+		transform-origin: center center;
 	}
 }
 
@@ -54,15 +99,21 @@ main {
 @media screen and (min-width: 769px) {
 	.brain-text {
 		font-size: 18px;
-		bottom: 30px;
+		bottom: 100px;
+		white-space: nowrap;
+	}
+	
+	/* Normal scale for desktop */
+	.container canvas {
+		transform: scale(1);
 	}
 }
 
-/* Desktop screens */
-@media screen and (min-width: 1024px) {
+/* Large screens */
+@media screen and (min-width: 1200px) {
 	.brain-text {
 		font-size: 20px;
-		bottom: 40px;
+		bottom: 120px;
 	}
 }
 
@@ -82,6 +133,12 @@ main {
 	align-items: center;
 	justify-content: center;
 	transition: all 0.3s ease;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-tap-highlight-color: transparent;
 }
 
 .gui-arrow-toggle:hover {
@@ -94,4 +151,26 @@ main {
 	color: #8a2be2;
 	transition: transform 0.3s ease;
 	margin-left: 2px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+/* Prevent selection on all elements */
+* {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* Allow selection only for input elements if needed */
+input, textarea {
+	-webkit-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
 }
