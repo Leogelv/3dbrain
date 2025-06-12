@@ -11,20 +11,15 @@ export default class WebGLView {
 	constructor(app) {
 		this.app = app;
 
-		this.samples = [
-			'images/sample-01.png',
-			'images/sample-02.png',
-			'images/sample-03.png',
-			'images/sample-04.png',
-			'images/sample-05.png',
-		];
+		// Only use the brain image
+		this.brainImage = 'images/sample-01.png';
 
 		this.initThree();
 		this.initParticles();
 		this.initControls();
 
-		const rnd = ~~(Math.random() * this.samples.length);
-		this.goto(rnd);
+		// Initialize with the brain image
+		this.initBrain();
 	}
 
 	initThree() {
@@ -65,23 +60,15 @@ export default class WebGLView {
 		this.renderer.render(this.scene, this.camera);
 	}
 
-
-	goto(index) {
-		// init next
-		if (this.currSample == null) this.particles.init(this.samples[index]);
-		// hide curr then init next
-		else {
-			this.particles.hide(true).then(() => {
-				this.particles.init(this.samples[index]);
-			});
-		}
-
-		this.currSample = index;
+	initBrain() {
+		// Initialize with the brain image
+		this.particles.init(this.brainImage);
 	}
 
+	// Remove the next() function as we don't need image switching
+	// Keeping the method empty in case it's called from elsewhere
 	next() {
-		if (this.currSample < this.samples.length - 1) this.goto(this.currSample + 1);
-		else this.goto(0);
+		// Do nothing - we only have one image
 	}
 
 	// ---------------------------------------------------------------------------------------------

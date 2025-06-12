@@ -15,8 +15,8 @@
   "license": "MIT",
   "sideEffects": false,
   "scripts": {
-    "build": "webpack -p --config config/prod.js",
-    "start": "webpack-dev-server --config config/dev.js"
+    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack -p --config config/prod.js",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server --config config/dev.js"
   },
   "dependencies": {
     "@brunoimbrizi/controlkit": "^0.1.93",

@@ -1,6 +1,97 @@
 body {
-	background-color: #222;
 	margin: 0;
 	overflow: hidden;
+	background: #f0f0f8;
+	background: linear-gradient(135deg, #f5f3ff 0%, #e8e5ff 50%, #f0f5ff 100%);
+}
+
+main {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+	width: 100vw;
+	position: relative;
+}
+
+.container {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.brain-text {
+	position: absolute;
+	bottom: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	color: #4a3a8a;
+	font-size: 16px;
+	font-weight: 400;
+	text-align: center;
+	white-space: nowrap;
+	z-index: 100;
+	opacity: 0.9;
+	letter-spacing: 0.5px;
+	text-shadow: 0 0 10px rgba(138, 43, 226, 0.2);
+}
+
+/* Mobile first - default styles for mobile */
+@media screen and (max-width: 768px) {
+	.brain-text {
+		font-size: 14px;
+		bottom: 15px;
+		padding: 0 20px;
+		white-space: normal;
+		max-width: 90%;
+	}
+}
+
+/* Tablet and larger screens */
+@media screen and (min-width: 769px) {
+	.brain-text {
+		font-size: 18px;
+		bottom: 30px;
+	}
+}
+
+/* Desktop screens */
+@media screen and (min-width: 1024px) {
+	.brain-text {
+		font-size: 20px;
+		bottom: 40px;
+	}
+}
+
+/* GUI Arrow Toggle */
+.gui-arrow-toggle {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	z-index: 10001;
+	width: 30px;
+	height: 30px;
 	cursor: pointer;
+	background-color: rgba(138, 43, 226, 0.1);
+	border: 1px solid rgba(138, 43, 226, 0.3);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.3s ease;
+}
+
+.gui-arrow-toggle:hover {
+	background-color: rgba(138, 43, 226, 0.2);
+	border-color: rgba(138, 43, 226, 0.5);
+}
+
+.gui-arrow-toggle .arrow {
+	font-size: 12px;
+	color: #8a2be2;
+	transition: transform 0.3s ease;
+	margin-left: 2px;
 }
