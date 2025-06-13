@@ -95,7 +95,7 @@ main {
 
 /* GUI Arrow Toggle */
 .gui-arrow-toggle {
-	display: none;
+	display: none !important;
 	position: fixed;
 	top: 20px;
 	right: 20px;
