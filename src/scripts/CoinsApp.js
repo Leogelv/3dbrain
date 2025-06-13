@@ -228,6 +228,79 @@ export default class CoinsApp {
 		ctx.restore();
 	}
 
+	createEmbossedDNATexture(baseColor) {
+		// Create diffuse map (color)
+		const diffuseCanvas = document.createElement('canvas');
+		diffuseCanvas.width = 512;
+		diffuseCanvas.height = 512;
+		const diffuseCtx = diffuseCanvas.getContext('2d');
+		
+		// Create normal map (for embossing)
+		const normalCanvas = document.createElement('canvas');
+		normalCanvas.width = 512;
+		normalCanvas.height = 512;
+		const normalCtx = normalCanvas.getContext('2d');
+		
+		// Clear diffuse canvas with base color
+		const color = new THREE.Color(baseColor);
+		diffuseCtx.fillStyle = `rgb(${color.r * 255}, ${color.g * 255}, ${color.b * 255})`;
+		diffuseCtx.fillRect(0, 0, diffuseCanvas.width, diffuseCanvas.height);
+		
+		// Clear normal map with neutral normal (pointing up)
+		normalCtx.fillStyle = '#8080ff'; // Neutral normal
+		normalCtx.fillRect(0, 0, normalCanvas.width, normalCanvas.height);
+		
+		// Draw embossed DNA on diffuse map
+		const darkerColor = color.clone().multiplyScalar(0.5);
+		const lighterColor = color.clone().multiplyScalar(1.5);
+		
+		diffuseCtx.save();
+		diffuseCtx.translate(diffuseCanvas.width / 2, diffuseCanvas.height / 2);
+		diffuseCtx.scale(16, 16); // 2x larger DNA icon (was 8, now 16)
+		
+		// Draw shadow (embossed effect)
+		diffuseCtx.fillStyle = `rgb(${darkerColor.r * 255}, ${darkerColor.g * 255}, ${darkerColor.b * 255})`;
+		diffuseCtx.translate(1, 1); // Shadow offset
+		this.drawDNAPath(diffuseCtx, true);
+		
+		// Draw highlight
+		diffuseCtx.translate(-2, -2); // Move to highlight position
+		diffuseCtx.fillStyle = `rgb(${lighterColor.r * 255}, ${lighterColor.g * 255}, ${lighterColor.b * 255})`;
+		this.drawDNAPath(diffuseCtx, true);
+		
+		// Draw main DNA
+		diffuseCtx.translate(1, 1); // Center position
+		diffuseCtx.fillStyle = `rgb(${color.r * 200}, ${color.g * 200}, ${color.b * 200})`;
+		this.drawDNAPath(diffuseCtx, true);
+		
+		diffuseCtx.restore();
+		
+		// Create normal map for embossing
+		normalCtx.save();
+		normalCtx.translate(normalCanvas.width / 2, normalCanvas.height / 2);
+		normalCtx.scale(16, 16); // 2x larger DNA icon (was 8, now 16)
+		
+		// Draw raised areas in normal map (lighter = raised)
+		normalCtx.fillStyle = '#c0c0ff'; // Raised normal
+		this.drawDNAPath(normalCtx, true);
+		
+		normalCtx.restore();
+		
+		// Create textures
+		const diffuseTexture = new THREE.CanvasTexture(diffuseCanvas);
+		const normalTexture = new THREE.CanvasTexture(normalCanvas);
+		
+		diffuseTexture.needsUpdate = true;
+		normalTexture.needsUpdate = true;
+		diffuseTexture.flipY = false;
+		normalTexture.flipY = false;
+		
+		return {
+			diffuse: diffuseTexture,
+			normal: normalTexture
+		};
+	}
+
 	createCoins() {
 		// Mobile first - fewer coins on mobile
 		const isMobile = window.innerWidth <= 768;
@@ -249,26 +322,63 @@ export default class CoinsApp {
 		// Create group for coin
 		const coinGroup = new THREE.Group();
 		
-		// Create main coin body (cylinder with rounded edges)
+		// Create main coin body with rounded edges
 		const coinGeometry = new THREE.CylinderGeometry(
 			coinRadius, 
 			coinRadius, 
 			coinThickness, 
-			64, 
-			1, 
+			64, // High segment count for smooth curves
+			4,  // Height segments for rounding
 			false
 		);
+		
+		// Apply rounded edge effect only if position attribute exists
+		if (coinGeometry.attributes && coinGeometry.attributes.position) {
+			const positions = coinGeometry.attributes.position;
+			for (let i = 0; i < positions.count; i++) {
+				const x = positions.getX(i);
+				const y = positions.getY(i);
+				const z = positions.getZ(i);
+				
+				// Round the top and bottom edges
+				if (Math.abs(y) > coinThickness * 0.3) {
+					const edgeRadius = coinThickness * 0.3;
+					const distance = Math.sqrt(x * x + z * z);
+					if (distance > coinRadius - edgeRadius) {
+						// Apply smooth rounding to edges
+						const factor = Math.cos((Math.PI / 2) * (distance - (coinRadius - edgeRadius)) / edgeRadius);
+						positions.setY(i, y * Math.max(0.1, factor));
+					}
+				}
+			}
+			positions.needsUpdate = true;
+			coinGeometry.computeVertexNormals();
+		}
 		
 		// Rotate to face up
 		coinGeometry.rotateX(Math.PI / 2);
 		
-		// Main coin material - purple gradient like in example
+		// Pastel color palette
+		const pastelColors = [
+			0xCDCBF8, // Light purple
+			0xE5EFFA, // Light blue
+			0xC4CFF2, // Medium blue-purple
+			0xD8D4F9, // Variation 1
+			0xF0F6FB, // Variation 2
+			0xB8C7F0, // Variation 3
+			0xE1DCF9, // Variation 4
+			0xDDE8F8  // Variation 5
+		];
+		
+		const baseColor = pastelColors[index % pastelColors.length];
+		
+		// Main coin material - soft pastel colors
 		const coinMaterial = new THREE.MeshStandardMaterial({
-			color: 0x8b5cf6, // Medium purple
-			metalness: 0.4,
-			roughness: 0.15,
-			emissive: 0x6d28d9,
-			emissiveIntensity: 0.05
+			color: baseColor,
+			metalness: 0.1,
+			roughness: 0.3,
+			emissive: baseColor,
+			emissiveIntensity: 0.02
 		});
 		
 		const coinMesh = new THREE.Mesh(coinGeometry, coinMaterial);
@@ -277,14 +387,17 @@ export default class CoinsApp {
 		// Create face geometry (slightly raised circle for the coin face)
 		const faceGeometry = new THREE.CircleGeometry(coinRadius * 0.95, 64);
 		
-		// Front face with DNA texture
+		// Create embossed DNA texture for this coin
+		const embossedTexture = this.createEmbossedDNATexture(baseColor);
+		
+		// Front face with embossed DNA texture
 		const frontFaceMaterial = new THREE.MeshStandardMaterial({
-			map: this.dnaTexture,
-			color: 0xffffff,
-			metalness: 0.1,
+			map: embossedTexture.diffuse,
+			normalMap: embossedTexture.normal,
+			color: new THREE.Color(baseColor).multiplyScalar(1.1),
+			metalness: 0.05,
 			roughness: 0.4,
-			transparent: true,
-			opacity: 0.95
+			normalScale: new THREE.Vector2(0.3, 0.3) // Subtle embossing
 		});
 		
 		const frontFace = new THREE.Mesh(faceGeometry, frontFaceMaterial);
@@ -297,24 +410,25 @@ export default class CoinsApp {
 		backFace.rotation.y = Math.PI;
 		coinGroup.add(backFace);
 		
-		// Create proper edge ring (torus around the coin edge)
+		// Create subtle edge highlight (optional - for extra definition)
 		const edgeGeometry = new THREE.TorusGeometry(
-			coinRadius - coinThickness / 2, // Correct radius for edge
-			coinThickness / 2, 
-			16, 
+			coinRadius * 0.98, // Slightly smaller radius
+			coinThickness * 0.1, // Very thin torus
+			8, 
 			64
 		);
 		
+		const edgeColor = new THREE.Color(baseColor).multiplyScalar(1.2); // Lighter version for highlight
 		const edgeMaterial = new THREE.MeshStandardMaterial({
-			color: 0x2e1065, // Very dark purple edge
-			metalness: 0.9,
-			roughness: 0.05,
-			emissive: 0x4c1d95,
-			emissiveIntensity: 0.1
+			color: edgeColor,
+			metalness: 0.05,
+			roughness: 0.2,
+			transparent: true,
+			opacity: 0.6
 		});
 		
 		const edge = new THREE.Mesh(edgeGeometry, edgeMaterial);
-		// No rotation needed - torus is already in correct orientation
+		// No rotation needed - coin is already rotated
 		coinGroup.add(edge);
 		
 		// Position coins across full width with better distribution
