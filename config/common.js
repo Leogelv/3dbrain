@@ -9,6 +9,7 @@ const __root = path.resolve(__dirname, '../');
 module.exports = {
 	entry: {
 		index: ['@babel/polyfill', './src/scripts/index.js'],
+		coins: ['@babel/polyfill', './src/scripts/coins.js'],
 	},
 	output: {
 		path: path.resolve(__root, 'dist'),
@@ -69,6 +70,13 @@ module.exports = {
 		]),
 		new HtmlWebpackPlugin({
 			template: './src/index.html',
+			chunks: ['index'],
+			filename: 'index.html'
+		}),
+		new HtmlWebpackPlugin({
+			template: './src/coins.html',
+			chunks: ['coins'],
+			filename: 'coins.html'
 		}),
 		new webpack.ProvidePlugin({
 			'THREE': 'three'

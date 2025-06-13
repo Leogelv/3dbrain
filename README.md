@@ -1,25 +1,50 @@
-# Interactive Particles with Three.js
+# Interactive Particles - Brain Programming Project
 
-A tutorial demonstrating how to draw a large number of particles with Three.js and an efficient way to make them react to mouse and touch input using an off-screen texture.
+ИВАН, ДАНИЛА! у нас 2 анимационных проекта внутри этого репо для Brain Programming проекта. Второе на /coins.html -- на страницу о их баллах эдельшто то там!
 
-![cover](https://user-images.githubusercontent.com/880280/51060802-de702c00-15e8-11e9-9bff-58b02dc284a3.jpg)
+## Features
 
-[Article on Codrops](https://tympanus.net/codrops/2019/01/17/interactive-particles-with-three-js/)
+### Main Project (/)
+- Real-time particle simulation
+- Interactive mouse controls
+- Responsive design
+- Modern WebGL rendering
 
-[Demo](https://tympanus.net/Tutorials/InteractiveParticles/)
+### Coins Animation (/coins.html)
+- 3D coins with DNA icons
+- Explosion effects on click/tap
+- Coin-to-coin collisions
+- Boundary constraints (600px area)
+- Mobile-responsive design
 
+## Setup
 
-## Run
-- Install `npm install`
-- Run `npm start`
-- Build `npm run build`
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Start development server:
+```bash
+npm start
+```
+
+3. Build for production:
+```bash
+npm run build
+```
+
+## Usage
+
+- Main project: `http://localhost:8080`
+- Coins animation: `http://localhost:8080/coins.html`
 
 ## Libraries
+- [Three.js](https://github.com/mrdoob/three.js/) - WebGL library
 - [ControlKit](https://github.com/brunoimbrizi/controlkit.js) - GUI
 - [gsap](https://www.npmjs.com/package/gsap) - animation platform
 - [glslify](https://github.com/glslify/glslify) - module system for GLSL
 - [stats.js](https://github.com/mrdoob/stats.js/) - performance monitor
-- [Three.js](https://github.com/mrdoob/three.js/) - WebGL library
 
 ## License
 This resource can be used freely if integrated or build upon in personal or commercial projects such as websites, web apps and web templates intended for sale. It is not allowed to take the resource "as-is" and sell it, redistribute, re-publish it, or sell "pluginized" versions of it. Free plugins built using this resource should have a visible mention and link to the original work. Always consider the licenses of all included libraries, scripts and images used.
