@@ -1,15 +1,10 @@
 import * as THREE from 'three';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
-import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass';
 
 export default class CoinsApp {
 	constructor() {
 		this.scene = null;
 		this.camera = null;
 		this.renderer = null;
-		this.composer = null;
-		this.bokehPass = null;
 		this.coins = [];
 		this.dnaTexture = null;
 		this.mouse = new THREE.Vector2();
@@ -41,7 +36,6 @@ export default class CoinsApp {
 		this.initScene();
 		this.initCamera();
 		this.initRenderer();
-		this.initPostProcessing();
 		this.initLights();
 		
 		this.createDNATexture();
@@ -94,29 +88,7 @@ export default class CoinsApp {
 		document.querySelector('.coins-container').appendChild(this.renderer.domElement);
 	}
 
-	initPostProcessing() {
-		// Create composer
-		this.composer = new EffectComposer(this.renderer);
-		
-		// Add render pass
-		const renderPass = new RenderPass(this.scene, this.camera);
-		this.composer.addPass(renderPass);
-		
-		// Add depth of field effect
-		const bokehPass = new BokehPass(this.scene, this.camera, {
-			focus: 10.0, // Focus distance
-			aperture: 0.025, // Aperture - bigger = more blur
-			maxblur: 0.02 // Maximum blur amount
-		});
-		
-		// Set render target resolution
-		const width = window.innerWidth;
-		const height = 500;
-		bokehPass.uniforms['aspect'].value = width / height;
-		
-		this.bokehPass = bokehPass;
-		this.composer.addPass(this.bokehPass);
-	}
+	
 
 	initLights() {
 		// Ambient light - softer for the light background
@@ -856,33 +828,9 @@ export default class CoinsApp {
 	}
 
 	draw() {
+		this.renderer.render(this.scene, this.camera);
 		// Update depth of field focus dynamically
-		if (this.bokehPass) {
-			// Calculate average distance of coins from camera
-			let totalDistance = 0;
-			let count = 0;
-			
-			this.coins.forEach(coin => {
-				const distance = coin.group.position.distanceTo(this.camera.position);
-				totalDistance += distance;
-				count++;
-			});
-			
-			// Set focus to average distance with some smoothing
-			const targetFocus = totalDistance / count;
-			const currentFocus = this.bokehPass.uniforms['focus'].value;
-			this.bokehPass.uniforms['focus'].value = currentFocus + (targetFocus - currentFocus) * 0.1;
-			
-			// Increase blur for coins closer to camera
-			this.bokehPass.uniforms['aperture'].value = 0.02 + Math.sin(this.time * 0.5) * 0.005;
-		}
 		
-		// Render with post-processing
-		if (this.composer) {
-			this.composer.render();
-		} else {
-			this.renderer.render(this.scene, this.camera);
-		}
 	}
 
 	animate() {
@@ -900,13 +848,5 @@ export default class CoinsApp {
 		this.camera.updateProjectionMatrix();
 		this.renderer.setSize(width, height);
 		
-		// Resize composer and update bokeh pass
-		if (this.composer) {
-			this.composer.setSize(width, height);
-		}
-		
-		if (this.bokehPass) {
-			this.bokehPass.uniforms['aspect'].value = width / height;
-		}
 	}
 } 
