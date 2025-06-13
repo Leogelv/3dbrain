@@ -24,7 +24,9 @@ export default class CoinsApp {
 		// Explosion effect
 		this.explosionActive = false;
 		this.explosionTime = 0;
-		this.explosionDuration = 3; // seconds to return to normal
+		this.explosionDuration = 3; // Longer explosion duration
+		this.gravity = -9.8; // Realistic gravity
+		this.airResistance = 0.02; // Air resistance factor
 		
 		// Collision detection
 		this.coinRadius = 1; // For collision detection
@@ -487,6 +489,8 @@ export default class CoinsApp {
 			phase: Math.random() * Math.PI * 2,
 			forwardPhase: (index / totalCoins) * Math.PI * 2, // Staggered forward movement
 			velocity: new THREE.Vector3(0, 0, 0), // For explosion effect
+			angularVelocity: new THREE.Vector3(0, 0, 0), // Angular velocity for spinning
+			mass: 0.8 + Math.random() * 0.4, // Variable mass for different behaviors
 			explosionDirection: new THREE.Vector3(
 				(Math.random() - 0.5) * 2,
 				(Math.random() - 0.5) * 2,
@@ -502,19 +506,41 @@ export default class CoinsApp {
 		window.addEventListener('mousemove', this.onMouseMove.bind(this));
 		
 		// Click/tap handler for explosion effect
-		const handleClick = () => {
+		const handleClick = (event) => {
 			this.explosionActive = true;
 			this.explosionTime = 0;
 			
+			// Get click position in 3D space
+			const rect = this.renderer.domElement.getBoundingClientRect();
+			const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+			const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+			
+			this.raycaster.setFromCamera(new THREE.Vector2(x, y), this.camera);
+			const explosionOrigin = new THREE.Vector3(x * 10, y * 5, 0);
+			
 			// Apply initial explosion force
 			this.coins.forEach(coin => {
-				const force = 3 + Math.random() * 2;
-				coin.velocity.copy(coin.explosionDirection).multiplyScalar(force);
+				// Calculate direction from explosion center to coin
+				const direction = new THREE.Vector3().subVectors(coin.group.position, explosionOrigin);
+				const distance = direction.length() + 1; // Avoid division by zero
+				direction.normalize();
 				
-				// Increase rotation speed
-				coin.rotationSpeed.x = coin.baseRotationSpeed.x * 5;
-				coin.rotationSpeed.y = coin.baseRotationSpeed.y * 5;
-				coin.rotationSpeed.z = coin.baseRotationSpeed.z * 5;
+				// Stronger force for closer coins
+				const forceMagnitude = (15 + Math.random() * 10) / Math.sqrt(distance);
+				
+				// Apply force based on mass
+				const acceleration = forceMagnitude / coin.mass;
+				coin.velocity.copy(direction).multiplyScalar(acceleration);
+				
+				// Add upward component for more dramatic effect
+				coin.velocity.y += 5 + Math.random() * 3;
+				
+				// Random spin
+				coin.angularVelocity.set(
+					(Math.random() - 0.5) * 10,
+					(Math.random() - 0.5) * 10,
+					(Math.random() - 0.5) * 10
+				);
 			});
 		};
 		
@@ -580,7 +606,7 @@ export default class CoinsApp {
 		// Update coins
 		this.coins.forEach((coinData, index) => {
 			const { group, rotationSpeed, floatSpeed, floatAmplitude, 
-					depthSpeed, depthAmplitude, phase, initialPosition, forwardPhase, velocity } = coinData;
+					depthSpeed, depthAmplitude, phase, initialPosition, forwardPhase, velocity, angularVelocity } = coinData;
 			
 			// Apply explosion velocity
 			if (this.explosionActive) {
@@ -592,18 +618,31 @@ export default class CoinsApp {
 				group.position.y += velocity.y * 0.016;
 				group.position.z += velocity.z * 0.016;
 				
-				// Apply damping
-				velocity.multiplyScalar(0.98);
+				// Apply gravity
+				velocity.y += this.gravity * 0.016 * coinData.mass;
 				
-				// Gradually return rotation speed to normal
-				const lerpFactor = progress * 0.02;
-				coinData.rotationSpeed.x += (coinData.baseRotationSpeed.x - coinData.rotationSpeed.x) * lerpFactor;
-				coinData.rotationSpeed.y += (coinData.baseRotationSpeed.y - coinData.rotationSpeed.y) * lerpFactor;
-				coinData.rotationSpeed.z += (coinData.baseRotationSpeed.z - coinData.rotationSpeed.z) * lerpFactor;
+				// Apply air resistance (more realistic than simple damping)
+				const speed = velocity.length();
+				if (speed > 0) {
+					const dragForce = this.airResistance * speed * speed;
+					const dragAcceleration = dragForce / coinData.mass;
+					velocity.addScaledVector(velocity.normalize(), -dragAcceleration * 0.016);
+				}
 				
-				// End explosion when complete
-				if (progress >= 1) {
+				// Apply angular velocity for spinning
+				group.rotation.x += angularVelocity.x * 0.016;
+				group.rotation.y += angularVelocity.y * 0.016;
+				group.rotation.z += angularVelocity.z * 0.016;
+				
+				// Gradually reduce angular velocity
+				angularVelocity.multiplyScalar(0.99);
+				
+				// End explosion when coins settle
+				if (progress >= 1 && Math.abs(velocity.y) < 0.1) {
 					this.explosionActive = false;
+					// Reset velocities
+					velocity.set(0, 0, 0);
+					angularVelocity.set(0, 0, 0);
 				}
 			}
 			
