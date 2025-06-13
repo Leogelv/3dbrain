@@ -510,36 +510,75 @@ export default class CoinsApp {
 			this.explosionActive = true;
 			this.explosionTime = 0;
 			
-			// Get click position in 3D space
+			// Get click position in normalized device coordinates
 			const rect = this.renderer.domElement.getBoundingClientRect();
 			const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
 			const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 			
+			// Update raycaster with mouse position
 			this.raycaster.setFromCamera(new THREE.Vector2(x, y), this.camera);
-			const explosionOrigin = new THREE.Vector3(x * 10, y * 5, 0);
 			
-			// Apply initial explosion force
-			this.coins.forEach(coin => {
+			// Check if we hit any coins directly
+			const coinMeshes = this.coins.map(coin => coin.mesh);
+			const intersects = this.raycaster.intersectObjects(coinMeshes);
+			
+			let explosionOrigin;
+			let directHit = false;
+			
+			if (intersects.length > 0) {
+				// Explosion at the exact hit point
+				explosionOrigin = intersects[0].point.clone();
+				directHit = true;
+			} else {
+				// Create explosion at a point in 3D space along the ray
+				const rayDirection = this.raycaster.ray.direction.clone();
+				const distance = 5; // Distance from camera
+				explosionOrigin = this.camera.position.clone().add(rayDirection.multiplyScalar(distance));
+			}
+			
+			// Apply explosion force to all coins
+			this.coins.forEach((coin, index) => {
 				// Calculate direction from explosion center to coin
 				const direction = new THREE.Vector3().subVectors(coin.group.position, explosionOrigin);
-				const distance = direction.length() + 1; // Avoid division by zero
-				direction.normalize();
+				const distance = direction.length();
 				
-				// Stronger force for closer coins
-				const forceMagnitude = (15 + Math.random() * 10) / Math.sqrt(distance);
+				// Prevent division by zero
+				if (distance < 0.1) {
+					direction.set(Math.random() - 0.5, 1, Math.random() - 0.5);
+				} else {
+					direction.normalize();
+				}
+				
+				// Calculate force based on distance (inverse square law)
+				let forceMagnitude;
+				if (directHit && intersects[0].object === coin.mesh) {
+					// Maximum force for directly hit coin
+					forceMagnitude = 30;
+				} else {
+					// Force falls off with distance
+					forceMagnitude = Math.min(25, 15 / (distance * 0.5 + 0.1));
+				}
+				
+				// Add some randomness
+				forceMagnitude *= (0.8 + Math.random() * 0.4);
 				
 				// Apply force based on mass
 				const acceleration = forceMagnitude / coin.mass;
 				coin.velocity.copy(direction).multiplyScalar(acceleration);
 				
-				// Add upward component for more dramatic effect
-				coin.velocity.y += 5 + Math.random() * 3;
+				// Add strong upward component for more dramatic effect
+				if (directHit && distance < 2) {
+					coin.velocity.y += 8 + Math.random() * 4;
+				} else {
+					coin.velocity.y += 3 + Math.random() * 2;
+				}
 				
-				// Random spin
+				// Add explosive spin
+				const spinIntensity = directHit && distance < 1 ? 15 : 10;
 				coin.angularVelocity.set(
-					(Math.random() - 0.5) * 10,
-					(Math.random() - 0.5) * 10,
-					(Math.random() - 0.5) * 10
+					(Math.random() - 0.5) * spinIntensity,
+					(Math.random() - 0.5) * spinIntensity,
+					(Math.random() - 0.5) * spinIntensity
 				);
 			});
 		};
@@ -563,27 +602,73 @@ export default class CoinsApp {
 				
 				const dx = coin1.group.position.x - coin2.group.position.x;
 				const dy = coin1.group.position.y - coin2.group.position.y;
-				const distance = Math.sqrt(dx * dx + dy * dy);
+				const dz = coin1.group.position.z - coin2.group.position.z;
+				const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
 				
 				if (distance < minDistance && distance > 0) {
-					// Calculate collision response
-					const overlap = minDistance - distance;
-					const separationX = (dx / distance) * overlap * 0.5;
-					const separationY = (dy / distance) * overlap * 0.5;
+					// Calculate collision normal
+					const nx = dx / distance;
+					const ny = dy / distance;
+					const nz = dz / distance;
 					
-					// Move coins apart
+					// Calculate overlap
+					const overlap = minDistance - distance;
+					
+					// Separate coins
+					const separationX = nx * overlap * 0.5;
+					const separationY = ny * overlap * 0.5;
+					const separationZ = nz * overlap * 0.5;
+					
 					coin1.group.position.x += separationX;
 					coin1.group.position.y += separationY;
+					coin1.group.position.z += separationZ;
 					coin2.group.position.x -= separationX;
 					coin2.group.position.y -= separationY;
+					coin2.group.position.z -= separationZ;
 					
-					// If explosion is active, affect velocities
+					// If explosion is active, handle velocity exchange
 					if (this.explosionActive) {
-						const velocityTransfer = 0.1;
-						coin1.velocity.x += separationX * velocityTransfer;
-						coin1.velocity.y += separationY * velocityTransfer;
-						coin2.velocity.x -= separationX * velocityTransfer;
-						coin2.velocity.y -= separationY * velocityTransfer;
+						// Calculate relative velocity
+						const vx = coin1.velocity.x - coin2.velocity.x;
+						const vy = coin1.velocity.y - coin2.velocity.y;
+						const vz = coin1.velocity.z - coin2.velocity.z;
+						
+						// Calculate velocity along collision normal
+						const velocityAlongNormal = vx * nx + vy * ny + vz * nz;
+						
+						// Don't resolve if velocities are separating
+						if (velocityAlongNormal > 0) continue;
+						
+						// Calculate restitution (bounciness)
+						const restitution = 0.7;
+						
+						// Calculate impulse scalar
+						const impulse = 2 * velocityAlongNormal / (coin1.mass + coin2.mass);
+						
+						// Apply impulse to velocities
+						const impulseX = impulse * nx * restitution;
+						const impulseY = impulse * ny * restitution;
+						const impulseZ = impulse * nz * restitution;
+						
+						coin1.velocity.x -= impulseX * coin2.mass;
+						coin1.velocity.y -= impulseY * coin2.mass;
+						coin1.velocity.z -= impulseZ * coin2.mass;
+						
+						coin2.velocity.x += impulseX * coin1.mass;
+						coin2.velocity.y += impulseY * coin1.mass;
+						coin2.velocity.z += impulseZ * coin1.mass;
+						
+						// Add spin from collision
+						const tangentVelocity = Math.sqrt(vx * vx + vy * vy + vz * vz - velocityAlongNormal * velocityAlongNormal);
+						const spinFactor = tangentVelocity * 0.5;
+						
+						coin1.angularVelocity.x += (Math.random() - 0.5) * spinFactor;
+						coin1.angularVelocity.y += (Math.random() - 0.5) * spinFactor;
+						coin1.angularVelocity.z += (Math.random() - 0.5) * spinFactor;
+						
+						coin2.angularVelocity.x += (Math.random() - 0.5) * spinFactor;
+						coin2.angularVelocity.y += (Math.random() - 0.5) * spinFactor;
+						coin2.angularVelocity.z += (Math.random() - 0.5) * spinFactor;
 					}
 				}
 			}
@@ -671,7 +756,26 @@ export default class CoinsApp {
 			if (Math.abs(adjustedY) > this.verticalBoundary) {
 				group.position.y = Math.sign(adjustedY) * this.verticalBoundary + this.verticalOffset;
 				if (this.explosionActive) {
-					velocity.y *= -0.9; // Stronger bounce for strict bounds
+					velocity.y *= -0.7; // Energy loss on bounce
+					// Add some spin on bounce
+					angularVelocity.x += (Math.random() - 0.5) * 5;
+					angularVelocity.z += (Math.random() - 0.5) * 5;
+				}
+			}
+			
+			// Ground collision (more realistic)
+			if (group.position.y < -this.verticalBoundary + this.verticalOffset && velocity.y < 0) {
+				group.position.y = -this.verticalBoundary + this.verticalOffset;
+				velocity.y *= -0.6; // Energy loss on ground bounce
+				
+				// Friction on ground
+				velocity.x *= 0.9;
+				velocity.z *= 0.9;
+				
+				// Rolling effect when hitting ground
+				if (Math.abs(velocity.x) > 0.1 || Math.abs(velocity.z) > 0.1) {
+					angularVelocity.z = -velocity.x * 3;
+					angularVelocity.x = velocity.z * 3;
 				}
 			}
 			
